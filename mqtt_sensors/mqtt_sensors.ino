@@ -13,7 +13,7 @@
     
 const char* ssid = SSID;
 const char* password = SSIDPASSWORD;
-const char* mqtt_server = "XXX";
+const char* mqtt_server = "42.0.0.77";
 
 const int dhtpin = DHTPIN;
 //const char* dhttype = DHTTYPE;
@@ -107,20 +107,23 @@ void loop() {
   }
 
   StaticJsonDocument<80> doc;
-  char output[80];
-
+  char output[120];
+  long lastMsg = 0;
   long now = millis();
-  // if (now - lastMsg > 5000) {
-  //   lastMsg = now;
-  //   doc["t"] = temp;
-  //   doc["p"] = pressure;
-  //   doc["h"] = humidity;
-  //   doc["g"] = gas;
+  if (now - lastMsg > 5000) {
+    lastMsg = now;
+    doc["Temperature (c)"] = t;
+    doc["Temperature (f) "] = f;
+    doc["Humidity"] = h;
+    doc["Heat Index (f)"] = hif;
+    doc["Heat Index (c)"] = hic;
 
-  //   serializeJson(doc, output);
-  //   Serial.println(output);
-  //   client.publish("/home/sensors", output);
-  // }
+    serializeJson(doc, output);
+    Serial.println(output);
+    lastMsg = millis();
+    client.publish("/haptic-mq", output);
+    
+  }
     
 }
 
@@ -131,7 +134,7 @@ void reconnect() {
     rc++;
     Serial.print("Attempting MQTT connection...");
     // Create a random client ID
-    String clientId = "ESP8266Client-";
+    String clientId = "ESP32s3dev-";
     clientId += String(random(0xffff), HEX);
     // Attempt to connect
     if (client.connect(clientId.c_str())) {
