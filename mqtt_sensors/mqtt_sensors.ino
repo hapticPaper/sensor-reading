@@ -16,7 +16,7 @@ const char* password = SSIDPASSWORD;
 const char* mqtt_server = "XXX";
 
 const int dhtpin = DHTPIN;
-const char* dhttype = DHTTYPE;
+//const char* dhttype = DHTTYPE;
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -27,8 +27,10 @@ void setup() {
   Serial.begin(115200);
   while (!Serial);
 
-  Serial.println("Using wifi SSID: " + ssid + " and password: " + password);
-  Serial.println("DHTPIN: " + DHTPIN + " DHTTYPE: " + DHTTYPE);
+  Serial.println(DHTPIN);
+
+  //Serial.println("Using wifi SSID: " + ssid + " and password: " + password);
+  //Serial.println("DHTPIN: " + DHTPIN + " DHTTYPE: " + DHTTYPE);
 
   // if (!bme.begin()) {
   //  Serial.println("Could not find a valid BME680 sensor, check wiring!");
@@ -79,7 +81,6 @@ void loop() {
   // Compute heat index in Celsius (isFahreheit = false)
   float hic = dht.computeHeatIndex(t, h, false);
 
-  dht.()
 
   Serial.print(F("Humidity: "));
   Serial.print(h);
@@ -125,7 +126,9 @@ void loop() {
 
 void reconnect() {
   // Loop until we're reconnected
-  while (!client.connected()) {
+  int rc=0;
+  while (!client.connected() && rc<3) {
+    rc++;
     Serial.print("Attempting MQTT connection...");
     // Create a random client ID
     String clientId = "ESP8266Client-";
@@ -135,8 +138,9 @@ void reconnect() {
       Serial.println("connected");
     } else {
       Serial.print("failed, rc=");
-      Serial.print(client.state());
-      delay(5000);
+      Serial.print(rc);
+      Serial.println(client.state());
+      delay(3000);
     }
   }
 }
