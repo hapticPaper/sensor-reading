@@ -4,5 +4,5 @@
 #define SENSORID "brDHT"
 #define SENSORMODEL "DHT11"
 #define SENSORBRAND "Generic"
-#define CLIENTID "ESP32s3LR"
+#define CLIENTID "ESP32s3BR"
 #define AREA "Bedroom"

@@ -127,3 +127,7 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+cmakelists.txt
+.vscode/
+mqtt_sensors/debug*
+.vscode/arduino.json
