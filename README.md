@@ -9,4 +9,5 @@ The logic used to create the data sent in to the topics should be the only codin
 
 ...This is a work in progress.
 This was built against a fork of this repo as the architecture stack; I run it in WSL. https://github.com/Miceuz/docker-compose-mosquitto-influxdb-telegraf-grafana
+
 My fork added nginx, but that would affect how this sensor repo can be used. 
