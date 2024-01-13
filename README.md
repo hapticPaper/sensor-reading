@@ -1,4 +1,4 @@
-# sensor-reading
+# C++ MQTT Client and Sensor Implementations
 
 These are MQTT integrations for popular components like the DHT Temp/Humidity, MQ Air Quality, HC ultrasonic, microwave, and IR [array] sensors. 
 
