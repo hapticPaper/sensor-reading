@@ -1,7 +1,3 @@
-#include <ArduinoJson.h>
-#include <ArduinoJson.hpp>
-#include <WiFi.h>
-#include <PubSubClient.h>
 #include <Wire.h>
 #include <DHT.h>
 #include <ctime>
@@ -11,6 +7,10 @@
 #include <iostream> 
 #include <iomanip>  
 #include <sstream>  
+
+
+#include "MQTTclient.h"
+
 //#include secrets.h to import SSID and SSIDPASSWORD
 #include "secrets.h"
 #include "br_sensor.h"
@@ -20,7 +20,8 @@ const char* password = SSIDPASSWORD;
 const char* mqtt_server = MQTT_HOST;
 
 WiFiClient espClient;
-PubSubClient client(espClient);
+MQTTclient mq(espClient);
+
 DHT dht(DHTPIN, DHTTYPE);
 
 
@@ -196,50 +197,11 @@ void loop() {
     doc["dt"] = std::stoi(dts);
     doc["dev_id"] = clientId;
     doc["sensor_id"] = sensorId;
-    publish_json(state_topic, doc);
+    mq.publishJson(state_topic, doc);
     
   }
     
 }
-
-int publish_json(String topic, JsonDocument payload ){
-  String buf;
-  size_t n = serializeJson(payload, buf);
-  int resp = client.publish(topic.c_str(), buf.c_str(), measureJson(payload));
-  Serial.println(topic.c_str());
-  Serial.println(buf);
-  Serial.print("mqtt publish: ");
-  Serial.println(resp);
-  if (resp == 0){
-    Serial.print("The message was not accepted. Sizes of actual message and payload: ");
-    Serial.print(measureJson(payload)); 
-    Serial.print("\t");
-    Serial.println(sizeof(buf));
-    Serial.println(client.getWriteError());
-  }
-  return resp;
-}
-
-int new_sensor(JsonDocument sensor_config, String label, String name, String device_class, String uom, String value_template) {
-  String unique_id; 
-  
-  unique_id =  SENSORID "_" + name;
-  sensor_config["state_topic"] = state_topic.c_str();
-  // sensor_config["area"]= AREA;
-  // sensor_config["unique_id"] = unique_id;
-  // sensor_config["friendly_name"] = AREA " " SENSORMODEL " " + label;
-  // sensor_config["name"] = label;
-  // sensor_config["object_id"] = unique_id;
-  // sensor_config["device_class"] = device_class;
-  // sensor_config["unit_of_measurement"] = uom;
-  // sensor_config["value_template"] = value_template.c_str();
-
-
-  String discovery_topic = "haptic-mq/sensor/" + unique_id + "/config";
-  
-  return publish_json(discovery_topic, sensor_config);
-}
-
 
 void reconnect() {
   // Loop until we're reconnected
@@ -261,11 +223,11 @@ void reconnect() {
     device["manufacturer"] = SENSORBRAND;    
 
     
-    new_sensor(ha_config, "Temp (f)", "temp_f",  "temperature", "°F", "{{ value_json.temp_f | round(2)  }}");
-    new_sensor(ha_config, "Temp (c)", "temp_c", "temperature", "°C", "{{ value_json.temp_c | round(2)  }}");
-    new_sensor(ha_config, "Heat Index (f)", "heat_index_f", "temperature", "°F", "{{ value_json.heat_index_f | round(2)  }}");
-    new_sensor(ha_config, "Heat Index (c)", "heat_index_c", "temperature", "°C", "{{ value_json.heat_index_c | round(2)  }}");
-    new_sensor(ha_config, "Humidity", "humidity", "humidity", "%", "{{ value_json.humidity | round(2)  }}");
+    mq.newSensor(ha_config, state_topic, "Temp (f)", "temp_f",  "temperature", SENSORID, SENSORMODEL, AREA, "°F", "{{ value_json.temp_f | round(2)  }}");
+    mq.newSensor(ha_config, state_topic, "Temp (c)", "temp_c", "temperature", SENSORID, SENSORMODEL, AREA,  "°C", "{{ value_json.temp_c | round(2)  }}");
+    mq.newSensor(ha_config, state_topic, "Heat Index (f)", "heat_index_f", SENSORID, SENSORMODEL, AREA,  "temperature", "°F", "{{ value_json.heat_index_f | round(2)  }}");
+    mq.newSensor(ha_config, state_topic, "Heat Index (c)", "heat_index_c", SENSORID, SENSORMODEL, AREA,  "temperature", "°C", "{{ value_json.heat_index_c | round(2)  }}");
+    mq.newSensor(ha_config, state_topic, "Humidity", "humidity", "humidity", SENSORID, SENSORMODEL, AREA,  "%", "{{ value_json.humidity | round(2)  }}");
 
     Serial.printf("\n\n");
     // Attempt to connect
