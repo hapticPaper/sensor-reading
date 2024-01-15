@@ -43,7 +43,7 @@ bool MQTTclient::newSensor(JsonDocument sensor_config, String state_topic, Strin
     sensor_config["value_template"] = value_template.c_str();
 
 
-    String discovery_topic = "haptic-mq/sensor/" + unique_id + "/config";
+    String discovery_topic = "haptic-mq/discovery/sensor/" + unique_id + "/config";
     
     return publishJson(discovery_topic, sensor_config);
 }

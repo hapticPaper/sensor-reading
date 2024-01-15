@@ -8,7 +8,7 @@
 #include <iomanip>  
 #include <sstream>  
 
-
+#include "wifiConnection.h"
 #include "MQTTclient.h"
 
 //#include secrets.h to import SSID and SSIDPASSWORD
@@ -62,40 +62,6 @@ float roundDec(double n, int decimals) {
     return std::stof(formattedValue);
 }
 
-
-
-bool initTime(String timezone){
-
-  Serial.println("Setting time");
-  configTime(0, 0, "pool.ntp.org");
-  struct tm timeinfo;  // First connect to NTP server, with 0 TZ offset
-  int retries = 0; 
-  while(!getLocalTime(&timeinfo)){
-    Serial.print("  Failed to obtain time. waits: ");
-    Serial.println(retries);
-    retries++;
-    delay(100);
-    if (retries>=60){
-      static_cast<void(*)(void)>(0)();
-    }
-  }
-  setenv("TZ",timezone.c_str(), 1); 
-  tzset();
-  delay(100);
-  Serial.println("Got the time from NTP");
-  printLocalTime();
-  return true;
-}
-
-
-void printLocalTime(){
-  struct tm timeinfo;
-   if(!getLocalTime(&timeinfo)){
-    Serial.println("Failed to obtain time 1");
-    return;
-  }
-  Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S zone %Z %z ");
-}
 
 
 void setup() {
