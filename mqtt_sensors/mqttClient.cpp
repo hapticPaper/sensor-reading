@@ -5,17 +5,6 @@
 #include <ArduinoJson.hpp>
 
 
-PubSubClient MQTTclient(WiFiClient wc, String server, int port){
-    
-    
-  PubSubClient mq;
-  mq(wc);
-  mq.setServer(server, port);
-  mq.setBufferSize(1024);
-  Serial.print("MQTT Buffer Size: " );
-  Serial.println(mq.getBufferSize());
-  return mq
-}
 
 
 bool MQTTclient::publishJson(String topic, JsonDocument payload ){
@@ -60,3 +49,24 @@ bool MQTTclient::newSensor(JsonDocument sensor_config, String state_topic, Strin
     return publishJson(discovery_topic, sensor_config);
 }
 
+
+void MQTTclient::reconnect() {
+  // Loop until we're reconnected
+  int rc=0;
+  while (!client.connected() && rc<3) {
+    rc++;
+    Serial.println("Attempting MQTT connection...");
+    
+    // Attempt to connect
+    if (client.connect(clientId.c_str())) {
+      Serial.println("connected");
+      
+      //<discovery_prefix>/<component>/[<node_id>/]<object_id>/config
+    } else {
+      Serial.print("failed, rc=");
+      Serial.print(rc);
+      Serial.println(client.state());
+      delay(3000);
+    }
+  }
+}

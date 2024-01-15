@@ -7,10 +7,8 @@
 #include <iostream> 
 #include <iomanip>  
 #include <sstream>  
-
-
-#include "wifiConnection.h"
 #include "MQTTclient.h"
+#include "wifiConnection.h"
 
 //#include secrets.h to import SSID and SSIDPASSWORD
 #include "secrets.h"
@@ -61,6 +59,8 @@ float roundDec(double n, int decimals) {
 }
 
 
+WiFiClient espClient;
+MQTTclient mq(&espClient);
 
 void setup() {
     
@@ -69,10 +69,30 @@ void setup() {
   delay(100);
 
 
-  initWifi espClient(ssid, password);
+  initWifi(&espClient, ssid, password);
 
-  MQTTclient mq(espClient, server, port);
+  mq.initMqtt(mqtt_server, clientId);
+  String discovery_topic;
+  String unique_id;
 
+  JsonDocument ha_config;
+
+  JsonObject device = ha_config["device"].to<JsonObject>();    
+  JsonArray identifiers = device["identifiers"].to<JsonArray>();
+
+  identifiers.add(clientId);
+  device["name"] = sensorId;
+  device["model"] = SENSORMODEL;
+  device["manufacturer"] = SENSORBRAND;    
+
+  
+  mq.newSensor(ha_config, state_topic, "Temp (f)", "temp_f",  "temperature", SENSORID, SENSORMODEL, AREA, "°F", "{{ value_json.temp_f | round(2)  }}");
+  mq.newSensor(ha_config, state_topic, "Temp (c)", "temp_c", "temperature", SENSORID, SENSORMODEL, AREA,  "°C", "{{ value_json.temp_c | round(2)  }}");
+  mq.newSensor(ha_config, state_topic, "Heat Index (f)", "heat_index_f", SENSORID, SENSORMODEL, AREA,  "temperature", "°F", "{{ value_json.heat_index_f | round(2)  }}");
+  mq.newSensor(ha_config, state_topic, "Heat Index (c)", "heat_index_c", SENSORID, SENSORMODEL, AREA,  "temperature", "°C", "{{ value_json.heat_index_c | round(2)  }}");
+  mq.newSensor(ha_config, state_topic, "Humidity", "humidity", "humidity", SENSORID, SENSORMODEL, AREA,  "%", "{{ value_json.humidity | round(2)  }}");
+
+  Serial.printf("\n\n");
 }
 
 
@@ -103,8 +123,8 @@ void loop() {
   // Compute heat index in Celsius (isFahreheit = false)
   float hic = dht.computeHeatIndex(t, h, false);
 
-  if (!mq.connected()) {
-    reconnect();
+  if (!mq.client.connected()) {
+    mq.reconnect();
   }
 
 
@@ -142,45 +162,4 @@ void loop() {
     
   }
     
-}
-
-void reconnect() {
-  // Loop until we're reconnected
-  int rc=0;
-  while (!mq.connected() && rc<3) {
-    rc++;
-    Serial.println("Attempting MQTT connection...");
-    String discovery_topic;
-    String unique_id;
-
-    JsonDocument ha_config;
-
-    JsonObject device = ha_config["device"].to<JsonObject>();    
-    JsonArray identifiers = device["identifiers"].to<JsonArray>();
-
-    identifiers.add(clientId);
-    device["name"] = sensorId;
-    device["model"] = SENSORMODEL;
-    device["manufacturer"] = SENSORBRAND;    
-
-    
-    mq.newSensor(ha_config, state_topic, "Temp (f)", "temp_f",  "temperature", SENSORID, SENSORMODEL, AREA, "°F", "{{ value_json.temp_f | round(2)  }}");
-    mq.newSensor(ha_config, state_topic, "Temp (c)", "temp_c", "temperature", SENSORID, SENSORMODEL, AREA,  "°C", "{{ value_json.temp_c | round(2)  }}");
-    mq.newSensor(ha_config, state_topic, "Heat Index (f)", "heat_index_f", SENSORID, SENSORMODEL, AREA,  "temperature", "°F", "{{ value_json.heat_index_f | round(2)  }}");
-    mq.newSensor(ha_config, state_topic, "Heat Index (c)", "heat_index_c", SENSORID, SENSORMODEL, AREA,  "temperature", "°C", "{{ value_json.heat_index_c | round(2)  }}");
-    mq.newSensor(ha_config, state_topic, "Humidity", "humidity", "humidity", SENSORID, SENSORMODEL, AREA,  "%", "{{ value_json.humidity | round(2)  }}");
-
-    Serial.printf("\n\n");
-    // Attempt to connect
-    if (mq.connect(clientId.c_str())) {
-      Serial.println("connected");
-      
-      //<discovery_prefix>/<component>/[<node_id>/]<object_id>/config
-    } else {
-      Serial.print("failed, rc=");
-      Serial.print(rc);
-      Serial.println(mq.state());
-      delay(3000);
-    }
-  }
 }

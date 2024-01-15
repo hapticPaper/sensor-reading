@@ -24,6 +24,7 @@ bool initTime(String timezone){
         Serial.println(retries);
         retries++;
         delay(100);
+        //reset the device if it still hasnt gotten an NTP reply after 1 minute
         if (retries>=60){
         static_cast<void(*)(void)>(0)();
         }
@@ -36,9 +37,7 @@ bool initTime(String timezone){
     return true;
 }
 
-void initWifi(String ssid, String password){
-
-    WiFiClient wc;
+void initWifi(WiFiClient* _wc, const char* ssid, const char* password){
         
     Serial.print("Connecting to ");
     Serial.println(ssid);
@@ -55,6 +54,6 @@ void initWifi(String ssid, String password){
     Serial.println("IP address: ");
     Serial.println(WiFi.localIP());
 
-    return wc; 
+    return; 
 
 }
