@@ -5,6 +5,18 @@
 #include <ArduinoJson.hpp>
 
 
+PubSubClient MQTTclient(WiFiClient wc, String server, int port){
+    
+    
+  PubSubClient mq;
+  mq(wc);
+  mq.setServer(server, port);
+  mq.setBufferSize(1024);
+  Serial.print("MQTT Buffer Size: " );
+  Serial.println(mq.getBufferSize());
+  return mq
+}
+
 
 bool MQTTclient::publishJson(String topic, JsonDocument payload ){
     String buf;

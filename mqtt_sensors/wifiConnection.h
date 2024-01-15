@@ -38,6 +38,7 @@ bool initTime(String timezone){
 
 void initWifi(String ssid, String password){
 
+    WiFiClient wc;
         
     Serial.print("Connecting to ");
     Serial.println(ssid);
@@ -54,6 +55,6 @@ void initWifi(String ssid, String password){
     Serial.println("IP address: ");
     Serial.println(WiFi.localIP());
 
-    return; 
+    return wc; 
 
 }

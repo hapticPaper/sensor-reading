@@ -8,6 +8,7 @@
 #include <iomanip>  
 #include <sstream>  
 
+
 #include "wifiConnection.h"
 #include "MQTTclient.h"
 
@@ -18,9 +19,6 @@
 const char* ssid = SSID;
 const char* password = SSIDPASSWORD;
 const char* mqtt_server = MQTT_HOST;
-
-WiFiClient espClient;
-MQTTclient mq(espClient);
 
 DHT dht(DHTPIN, DHTTYPE);
 
@@ -71,38 +69,15 @@ void setup() {
   delay(100);
 
 
-  Serial.print("Connecting to ");
-  Serial.println(ssid);
+  initWifi espClient(ssid, password);
 
-  WiFi.begin(ssid, password);
+  MQTTclient mq(espClient, server, port);
 
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-  }
-
-  Serial.println("");
-  Serial.println("WiFi connected");
-  Serial.println("IP address: ");
-  Serial.println(WiFi.localIP());
-
-
-  
-  initTime("EST5EDT,M3.2.0,M11.1.0");  
-  //printLocalTime();     
-
-
-  client.setServer(mqtt_server, 1883);
-  client.setBufferSize(512);
-  Serial.print("MQTT Buffer Size: " );
-  Serial.println(client.getBufferSize());
 }
 
 
 
 static std::time_t lastMsg = 0;
-
-
 
 void loop() {
   
@@ -128,7 +103,7 @@ void loop() {
   // Compute heat index in Celsius (isFahreheit = false)
   float hic = dht.computeHeatIndex(t, h, false);
 
-  if (!client.connected()) {
+  if (!mq.connected()) {
     reconnect();
   }
 
@@ -172,7 +147,7 @@ void loop() {
 void reconnect() {
   // Loop until we're reconnected
   int rc=0;
-  while (!client.connected() && rc<3) {
+  while (!mq.connected() && rc<3) {
     rc++;
     Serial.println("Attempting MQTT connection...");
     String discovery_topic;
@@ -197,14 +172,14 @@ void reconnect() {
 
     Serial.printf("\n\n");
     // Attempt to connect
-    if (client.connect(clientId.c_str())) {
+    if (mq.connect(clientId.c_str())) {
       Serial.println("connected");
       
       //<discovery_prefix>/<component>/[<node_id>/]<object_id>/config
     } else {
       Serial.print("failed, rc=");
       Serial.print(rc);
-      Serial.println(client.state());
+      Serial.println(mq.state());
       delay(3000);
     }
   }
