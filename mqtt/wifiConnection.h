@@ -27,7 +27,7 @@ bool initTime(String timezone){
         //reset the device if it still hasnt gotten an NTP reply after 1 minute
         if (retries>=60){
             printf("Restting... from \n%s :  \t %s", __FILE__, __LINE__);
-            static_cast<void(*)(void)>(0)();
+            //static_cast<void(*)(void)>(0)();
         }
     }
     setenv("TZ",timezone.c_str(), 1); 

@@ -39,7 +39,10 @@ void setup() {
 
     initWifi(&espClient, ssid, password);
 
-    mq.initMqtt(mqtt_server, clientId);
+    // mq.initMqtt(mqtt_server, clientId);
+    // if (!mq.client.connected()) {
+    //     mq.reconnect();
+    // }
     String discovery_topic;
     String unique_id;
 
@@ -64,8 +67,14 @@ static std::time_t lastMsg = 0;
 
 void loop() {  
     delay(5000);
-    JsonDocument * _test;
-    _test['foo']='bar';
-    Serial.printf(mq.publishJson('test/cpp_mqtt',  *_test));
+    JsonDocument test;
+    test['foo']='bar';
+    size_t buffer_size = measureJson(test)+1;
+    String t = "test/cpp_mqtt";
+    // char buf[buffer_size];
+    // serializeJson(test, buf, buffer_size);
+    Serial.println(mq.publishJson(t, test));
+    Serial.println("Test complete.");
+    delay(10000000);
     
 }

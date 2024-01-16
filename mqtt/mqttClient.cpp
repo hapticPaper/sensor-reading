@@ -8,11 +8,11 @@
 
 
 int MQTTclient::publishJson(String topic, JsonDocument& payload) {
-    size_t bufferSize = measureJson(payload);
-    char* _buf = new char[bufferSize+1];
+    size_t bufferSize = measureJson(payload)+1;
+    char* _buf = new char[bufferSize];
     Serial.println(bufferSize); 
     serializeJson(payload, _buf, bufferSize);
-    Serial.println(bufferSize); 
+    Serial.println(*_buf); 
     int resp = client.publish(topic.c_str(), _buf, bufferSize);
     Serial.println(topic.c_str());
     Serial.println(_buf);
@@ -56,11 +56,11 @@ int MQTTclient::newSensor(JsonDocument& sensor_config, String state_topic, Strin
 
 
 void MQTTclient::reconnect() {
-  // Loop until we're reconnected
+  Serial.println("Loop until we're reconnected");
   int rc=0;
   while (!client.connected() && rc<3) {
     rc++;
-    Serial.println("Attempting MQTT connection...");
+    Serial.printf("Attempting MQTT connection... with %s", clientId.c_str());
     
     // Attempt to connect
     if (client.connect(clientId.c_str())) {
