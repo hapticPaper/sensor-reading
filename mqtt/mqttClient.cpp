@@ -7,26 +7,31 @@
 
 
 
-bool MQTTclient::publishJson(String topic, JsonDocument payload ){
-    String buf;
-    size_t n = serializeJson(payload, buf);
-    int resp = client.publish(topic.c_str(), buf.c_str(), measureJson(payload));
+int MQTTclient::publishJson(String topic, JsonDocument& payload) {
+    size_t bufferSize = measureJson(payload);
+    char* _buf = new char[bufferSize+1];
+    Serial.println(bufferSize); 
+    serializeJson(payload, _buf, bufferSize);
+    Serial.println(bufferSize); 
+    int resp = client.publish(topic.c_str(), _buf, bufferSize);
     Serial.println(topic.c_str());
-    Serial.println(buf);
+    Serial.println(_buf);
     Serial.print("mqtt publish: ");
     Serial.println(resp);
     if (resp == 0){
         Serial.print("The message was not accepted. Sizes of actual message and payload: ");
         Serial.print(measureJson(payload)); 
-        Serial.print("\t");
-        Serial.println(sizeof(buf));
+        Serial.print(",\t");
+        Serial.print(",\t");
+        Serial.println(sizeof(_buf));
         Serial.println(client.getWriteError());
-        return false;
     }
-    return true;
+    
+    delete[] _buf;
+    return resp;
 }
 
-bool MQTTclient::newSensor(JsonDocument sensor_config, String state_topic, String label,
+int MQTTclient::newSensor(JsonDocument& sensor_config, String state_topic, String label,
                             String name, String device_class,
                             String sensor_id, String sensor_model,
                             String area, String uom, String value_template) {

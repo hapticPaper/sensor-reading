@@ -23,10 +23,11 @@ bool initTime(String timezone){
         Serial.print("  Failed to obtain time. waits: ");
         Serial.println(retries);
         retries++;
-        delay(100);
+        delay(1000);
         //reset the device if it still hasnt gotten an NTP reply after 1 minute
         if (retries>=60){
-        static_cast<void(*)(void)>(0)();
+            printf("Restting... from \n%s :  \t %s", __FILE__, __LINE__);
+            static_cast<void(*)(void)>(0)();
         }
     }
     setenv("TZ",timezone.c_str(), 1); 

@@ -21,7 +21,7 @@ public:
         client.setBufferSize(bufferSize);
         return client;
     }
-    bool publishJson(String topic, JsonDocument payload);
-    bool newSensor(JsonDocument sensor_config, String state_topic, String label, String name, String device_class, String sensor_id, String sensor_model, String area, String uom, String value_template);
+    int publishJson(String topic, JsonDocument& payload);
+    int newSensor(JsonDocument& sensor_config, String state_topic, String label, String name, String device_class, String sensor_id, String sensor_model, String area, String uom, String value_template);
     void reconnect();
     };

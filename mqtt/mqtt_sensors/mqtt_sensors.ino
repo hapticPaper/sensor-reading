@@ -12,7 +12,7 @@
 
 //#include secrets.h to import SSID and SSIDPASSWORD
 #include "secrets.h"
-#include "br_sensor.h"
+#include "ultrasonic.h"
 
 const char* ssid = SSID;
 const char* password = SSIDPASSWORD;

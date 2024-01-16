@@ -131,3 +131,5 @@ cmakelists.txt
 .vscode/
 mqtt_sensors/debug*
 .vscode/arduino.json
+*.cfg
+*.svd
