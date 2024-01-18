@@ -7,37 +7,45 @@
 
 
 
-int MQTTclient::publishJson(String topic, JsonDocument& payload) {
-    size_t bufferSize = measureJson(payload)+1;
-    char* _buf = new char[bufferSize];
-    Serial.println(bufferSize); 
-    serializeJson(payload, _buf, bufferSize);
-    Serial.println(*_buf); 
-    int resp = client.publish(topic.c_str(), _buf, bufferSize);
+int MQTTclient::publishJson(String topic, JsonDocument payload) {
+    Serial.printf("Here to print.");
+    delay(100000);
+    size_t psize = 1+measureJson(payload);
+    char* buf;
+    serializeJson(payload, buf, psize);
+    Serial.println(buf); 
+
+    int resp = client->publish(topic.c_str(), buf);    
     Serial.println(topic.c_str());
-    Serial.println(_buf);
+    Serial.println(buf);
     Serial.print("mqtt publish: ");
     Serial.println(resp);
+
     if (resp == 0){
         Serial.print("The message was not accepted. Sizes of actual message and payload: ");
         Serial.print(measureJson(payload)); 
         Serial.print(",\t");
-        Serial.print(",\t");
-        Serial.println(sizeof(_buf));
-        Serial.println(client.getWriteError());
+        Serial.println(sizeof(buf));
+        Serial.println(client->getWriteError());
     }
     
-    delete[] _buf;
     return resp;
 }
+void MQTTclient::initMqtt(String mqtt_clientId, String server, int port, int buffer) {    
+        clientId=mqtt_clientId;
+        client->setServer(server.c_str(), port);
+        client->setBufferSize(buffer); 
+        Serial.printf("Initializing %s to %s buffer %d bytes\n",  clientId, server, client->getBufferSize());
+        return;
+    }
 
-int MQTTclient::newSensor(JsonDocument& sensor_config, String state_topic, String label,
+int MQTTclient::newSensor(JsonDocument sensor_config, String state_topic, String label,
                             String name, String device_class,
                             String sensor_id, String sensor_model,
                             String area, String uom, String value_template) {
     String unique_id; 
-    
     unique_id =  sensor_id + "_" + name;
+    
     sensor_config["state_topic"] = state_topic.c_str();
     sensor_config["area"]= area;
     sensor_config["unique_id"] = unique_id;
@@ -50,7 +58,6 @@ int MQTTclient::newSensor(JsonDocument& sensor_config, String state_topic, Strin
 
 
     String discovery_topic = "haptic-mq/discovery/sensor/" + unique_id + "/config";
-    
     return publishJson(discovery_topic, sensor_config);
 }
 
@@ -58,19 +65,16 @@ int MQTTclient::newSensor(JsonDocument& sensor_config, String state_topic, Strin
 void MQTTclient::reconnect() {
   Serial.println("Loop until we're reconnected");
   int rc=0;
-  while (!client.connected() && rc<3) {
+  while (!client->connected() && rc<3) {
     rc++;
-    Serial.printf("Attempting MQTT connection... with %s", clientId.c_str());
+    Serial.println("Attempting MQTT connection...");
     
     // Attempt to connect
-    if (client.connect(clientId.c_str())) {
-      Serial.println("connected");
+    if (client->connect(clientId.c_str())) {
+      Serial.printf("connected, client state: %s\n", client->state());
       
-      //<discovery_prefix>/<component>/[<node_id>/]<object_id>/config
     } else {
-      Serial.print("failed, rc=");
-      Serial.print(rc);
-      Serial.println(client.state());
+      Serial.printf("failed, client state: %s rc= %s\n", client->state(), rc);
       delay(3000);
     }
   }

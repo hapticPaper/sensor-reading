@@ -18,6 +18,8 @@
 const char* ssid = SSID;
 const char* password = SSIDPASSWORD;
 const char* mqtt_server = MQTT_HOST;
+const int mqtt_port = MQTT_PORT;
+const int mqtt_buffer = MQTT_BUFFER;
 
 DHT dht(DHTPIN, DHTTYPE);
 
@@ -38,11 +40,11 @@ void setup() {
 
 
     initWifi(&espClient, ssid, password);
+    initTime("EST5EDT,M3.2.0,M11.1.0");    
+    mq.initMqtt(clientId, mqtt_server, mqtt_port, mqtt_buffer);
+    mq.reconnect();
 
-    // mq.initMqtt(mqtt_server, clientId);
-    // if (!mq.client.connected()) {
-    //     mq.reconnect();
-    // }
+
     String discovery_topic;
     String unique_id;
 
@@ -68,11 +70,8 @@ static std::time_t lastMsg = 0;
 void loop() {  
     delay(5000);
     JsonDocument test;
-    test['foo']='bar';
-    size_t buffer_size = measureJson(test)+1;
+    test["foo"]="bar";
     String t = "test/cpp_mqtt";
-    // char buf[buffer_size];
-    // serializeJson(test, buf, buffer_size);
     Serial.println(mq.publishJson(t, test));
     Serial.println("Test complete.");
     delay(10000000);

@@ -17,6 +17,8 @@
 const char* ssid = SSID;
 const char* password = SSIDPASSWORD;
 const char* mqtt_server = MQTT_HOST;
+const int mqtt_port = MQTT_PORT;
+const int mqtt_buffer = MQTT_BUFFER;
 
 DHT dht(DHTPIN, DHTTYPE);
 
