@@ -5,8 +5,8 @@
 #define MQTT_PORT 1883
 #define MQTT_BUFFER 1024
 
-#define SENSORID "lrDHT"
+#define SENSORID "lrRadiatorDHT"
 #define SENSORMODEL "DHT11"
 #define SENSORBRAND "Generic"
-#define CLIENTID "ESP32s3LR"
+#define CLIENTID "ESP32s3LR-Radiator"
 #define AREA "Living Room"

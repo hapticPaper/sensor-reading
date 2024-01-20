@@ -38,7 +38,7 @@ bool initTime(String timezone){
     return true;
 }
 
-void initWifi(WiFiClient* _wc, const char* ssid, const char* password){
+void initWifi(const char* ssid, const char* password){
         
     Serial.print("Connecting to ");
     Serial.println(ssid);
